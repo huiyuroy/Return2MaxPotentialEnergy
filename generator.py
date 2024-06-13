@@ -24,7 +24,6 @@ from collections import deque
 from distutils.util import strtobool
 from util.file import load_json, save_json, save_grid_image
 
-
 BOUND_ATTR_FORMAT = {
     "is_out_bound": bool,
     "points": list,
@@ -270,6 +269,12 @@ def load_scene(tar_path, simple_load=False):
 
 
 def load_trajectories(tar_path, scene_name):
+    def load_trajectory(t_path):
+        traj_data = load_json(t_path)
+        traj_type = traj_data['type']
+        traj_tars = traj_data['targets']
+        return traj_type, traj_tars
+
     all_traj_files = get_files(tar_path + '\\simu_trajs\\{}'.format(scene_name), 'json')
     trajs = []
 
@@ -281,13 +286,6 @@ def load_trajectories(tar_path, scene_name):
         t.end_idx = t.tar_num - 1
         trajs.append(t)
     return tuple(trajs)
-
-
-def load_trajectory(tar_path):
-    traj_data = load_json(tar_path)
-    traj_type = traj_data['type']
-    traj_tars = traj_data['targets']
-    return traj_type, traj_tars
 
 
 def save_bound(bound):
