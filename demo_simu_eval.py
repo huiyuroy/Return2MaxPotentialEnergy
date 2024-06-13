@@ -19,7 +19,6 @@ if __name__ == '__main__':
     # 3.加载物理空间
     p_path = 'E:\\polyspaces\\phy'
     pname = 'test3'
-    print(123)
     pscene = generator.load_scene(p_path + '\\' + pname + '.json')
     pscene.update_grids_runtime_attr()
     pscene.calc_r2mpe_precomputation() # 如果采用R2mpe的任何组件，该函数必须调用以激活场景位置点可见区域离线计算
