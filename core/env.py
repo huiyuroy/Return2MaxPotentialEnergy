@@ -10,7 +10,6 @@ from core import *
 
 from core.space.scene import Scene, DiscreteScene
 from core.space.boundary import Boundary
-from core.space.roadmap import Node, Patch
 from core.space.grid import Tiling
 from core.space.trajectory import Trajectory
 

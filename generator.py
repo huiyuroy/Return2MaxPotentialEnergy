@@ -16,7 +16,6 @@ import core.input as walker_base
 
 from core.space.scene import Scene, DiscreteScene
 from core.space.boundary import Boundary
-from core.space.roadmap import Node, Patch
 from core.space.grid import Tiling
 from core.space.trajectory import Trajectory
 
@@ -214,47 +213,12 @@ def load_grids(scene, base_data, vis_data, extend_data):
     scene.tiling_offset = np.array(base_data["tiling_offset"])
 
 
-def load_roadmap(scene, data):
-    def load_node(node_attr):
-        n = Node()
-        n.id = node_attr['id']
-        n.pos = node_attr['pos']
-        n.rela_loop_id = node_attr['loop_connect']
-        n.child_ids = node_attr['children_ids']
-        n.father_ids = node_attr['father_ids']
-        return n
-
-    nodes = list(map(load_node, data['data']))
-
-    for node in nodes:
-        if node.rela_loop_id != -1:
-            for temp_node in nodes:
-                if temp_node.id == node.rela_loop_id:
-                    node.rela_loop_node = temp_node
-                    break
-        node.child_nodes = []
-        for cid in node.child_ids:
-            for temp_node in nodes:
-                if temp_node.id == cid:
-                    node.child_nodes.append(temp_node)
-                    break
-        node.father_nodes = []
-        for fid in node.father_ids:
-            for temp_node in nodes:
-                if temp_node.id == fid:
-                    node.father_nodes.append(temp_node)
-                    break
-    scene.nodes = nodes
-
-
 def load_scene(tar_path, simple_load=False):
     scene = DiscreteScene()
     scene_dir, scene_name = os.path.split(tar_path)
     s_name = scene_name.split(".")[0]
     contour_data = load_json(tar_path)
     load_contours(scene, contour_data)
-    road_data = load_json(scene_dir + '\\roadmap\\{}_rd.json'.format(s_name))
-    load_roadmap(scene, road_data)
     if simple_load:
         return scene
     segment_data = load_json(scene_dir + '\\segment\\{}_seg.json'.format(s_name))
