@@ -6,16 +6,15 @@ class BaseGainManager(BaseManager):
     def __init__(self):
         super().__init__()
         self.gain_spec = const_gain
-        # --------------------------重定向增益相关变量-----------------------------------
         # [[min, max, default_min, default_max], [min, max, default_min, default_max]]
-        # |------------最严格约束范围-----------|---|-----------最宽松约束范围------------|
+        # |------------restrict range-----------|---|-----------relax range------------|
         self.gt_const = np.array([[0, 0, 0, 0], [0, 0, 0, 0]])  # translation gain
         self.gr_const = np.array([[0, 0, 0, 0], [0, 0, 0, 0]])  # rotation gain
         self.gc_const = np.array([[0, 0, 0, 0], [0, 0, 0, 0]])  # curvature gain
         self.gb_const = np.array([[0, 0, 0, 0], [0, 0, 0, 0]])  # bending gain
-        # [[gt_r,gr_r,gc_r,gb_r],[dgt_r,dgr_r,dgc_r,dgb_r]],当前增益变化率,默认变化率
+        # [[gt_r,gr_r,gc_r,gb_r],[dgt_r,dgr_r,dgc_r,dgb_r]], 1: current change rate of gain, 2: default rate
         self.g_rate_const = np.array([[0, 0, 0, 0], [0, 0, 0, 0]])
-        # [[gt,gr,gc,gb],[dgt,dgr,dgc,dgb]],当前重定向增益值
+        # [[gt,gr,gc,gb],[dgt,dgr,dgc,dgb]], current value of gain
         self.g_pri = np.array([[1, 1, 0, 1], [1, 1, 0, 1]])
         self.gt_range = np.array([[0.0, 0.0], [0.0, 0.0]])
         self.gr_range = np.array([[0.0, 0.0], [0.0, 0.0]])
@@ -47,7 +46,7 @@ class BaseGainManager(BaseManager):
     @abstractmethod
     def reset(self):
         """
-        重置重定向增益值
+        reset the used gain
 
         Returns:
 
@@ -57,7 +56,7 @@ class BaseGainManager(BaseManager):
     @abstractmethod
     def update(self, **kwargs):
         """
-        动态更新重定向增益
+        dynamically update the value of gain
 
         Returns:
 

@@ -114,10 +114,10 @@ class RdwEnv(BaseEnv):
 
     def set_current_trajectory(self, traj):
         """
-        将所有当前的agent模拟路线设置为指定的路径
+        set the trajectory to all agents
 
         Args:
-            traj: 指定路径对象
+            traj:
 
         Returns:
 

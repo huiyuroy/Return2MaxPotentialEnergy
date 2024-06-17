@@ -8,7 +8,7 @@ class Tiling:
         self.corr_scene = None
         self.mat_loc: Tuple = tuple()  # row,col
         self.center: np.ndarray = np.array([0, 0])
-        self.cross_bound: np.ndarray = np.array([])  # 穿过这个tiling的边界
+        self.cross_bound: np.ndarray = np.array([])  # the boundary across this tiling
         self.rect: Tuple = (0,)
         self.x_min: float = 0
         self.x_max: float = 0
@@ -47,10 +47,12 @@ class Tiling:
         已知用户所在tiling，求某个指定tiling的能量
 
         Args:
-
+            sur_tiling:
             loc:用户当前位置
             fwd:
+            effect_r:
             enable_obs_coff:
+
         Returns:
 
         """

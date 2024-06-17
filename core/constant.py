@@ -1,9 +1,9 @@
 const_env = {
     "tiling_width": 10,
     "time_step": 0.02,
-    "human_radius": 20,  # 默认人体平均宽度
-    "scene_board": 40,  # 绘制场景时在长宽添加的少量外边缘宽度，防止场景空白区域与背景混合，默认0.4m
-    "file_scene_scale": 1  # 场景数值与实际单位的换算关系，1
+    "human_radius": 20,  # default average width of human body
+    "scene_board": 40,
+    "file_scene_scale": 1
 }
 
 const_steer = {

@@ -36,9 +36,9 @@ class NoRdwManager(BaseRdwManager):
     def __init__(self):
         super(NoRdwManager, self).__init__()
         self.rdw_type = 'No Rdw'
-        # 反应式重定向各类速度常量，索引0是静止时虚拟视角自转速度，索引1是静止-移动区分阈值，索引2是gc最大角速度变化量，索引3是gr最大角速度变化量
+        # constant of reactive rdw
         self.steer_vel_c = np.array([0, 0, 0, 0])
-        self.steer_dampen = np.array([0, 0])  # 反应式重定向抑制项，索引0是距离抑制项，索引1是角度抑制项
+        self.steer_dampen = np.array([0, 0])  # dumping terms, distance dumping [0] and rotation dumping [1``]
         self.steer_force = np.array([0, 0])
         self.enable_rdw = False
 
@@ -71,11 +71,6 @@ class SteerRdwManager(NoRdwManager):
 
     def __init__(self):
         super().__init__()
-        # 反应式重定向各类速度常量，索引0是静止时虚拟视角自转速度，索引1是静止-移动区分阈值，索引2是gc最大角速度变化量，索引3是gr最大角速度变化量
-        self.steer_vel_c = np.array([0, 0, 0, 0])
-        self.steer_dampen = np.array([0, 0])  # 反应式重定向抑制项，索引0是距离抑制项，索引1是角度抑制项
-        self.steer_force = np.array([0, 0])
-        self.enable_rdw = True
 
     def reset(self):
         super().reset()
@@ -83,15 +78,15 @@ class SteerRdwManager(NoRdwManager):
 
     def calc_vir_state(self):
         gain_mg = self.agent.gainer
-        p_walk_rot = self.p_vel * 0.01 * gain_mg.g_values[2] * RAD2DEG  # 基于行走速度的方向偏转
+        p_walk_rot = self.p_vel * 0.01 * gain_mg.g_values[2] * RAD2DEG
         if self.enable_rdw:
             rot_dir = 0
             if self.p_rot != 0:
-                rot_dir = self.p_rot / abs(self.p_rot)  # + 顺时针 - 逆时针
+                rot_dir = self.p_rot / abs(self.p_rot)  # + clockwise - anti_clockwise
             desired_rot_dir = 0
             desired_rotation = geo.calc_angle_bet_vec(self.p_fwd, self.steer_force)
             if desired_rotation != 0:
-                desired_rot_dir = desired_rotation / abs(desired_rotation)  # + 顺时针 - 逆时针
+                desired_rot_dir = desired_rotation / abs(desired_rotation)
             else:
                 desired_rotation = PI_1_4
             abs_ph_rot = abs(self.p_rot)
@@ -120,7 +115,7 @@ class SteerRdwManager(NoRdwManager):
                     clk_angle = abs(geo.calc_angle_bet_vec(self.steer_force, geo.rot_vecs(self.p_fwd, selected_rot)))
                     anti_clk_angle = abs(
                         geo.calc_angle_bet_vec(self.steer_force, geo.rot_vecs(self.p_fwd, -selected_rot)))
-                    rot_dir = 1 if clk_angle > anti_clk_angle else -1  # 确定曲率增益偏转方向
+                    rot_dir = 1 if clk_angle > anti_clk_angle else -1
             vir_rot_vel = selected_rot * rot_dir
             vir_mov_vel = self.p_vel * gain_mg.g_values[0]
         else:
@@ -146,7 +141,7 @@ class SteerRdwManager(NoRdwManager):
 
 class S2CRdwManager(SteerRdwManager):
     """
-    参考https://ieeexplore.ieee.org/abstract/document/6479192
+    refer to https://ieeexplore.ieee.org/abstract/document/6479192
 
     """
 
@@ -160,7 +155,7 @@ class S2CRdwManager(SteerRdwManager):
 
 class S2ORdwManager(SteerRdwManager):
     """
-    参考https://ieeexplore.ieee.org/abstract/document/6479192
+    refer to https://ieeexplore.ieee.org/abstract/document/6479192
 
 
     """
@@ -214,7 +209,7 @@ class S2ORdwManager(SteerRdwManager):
                 tar2 = np.array([x1, y2])
             else:
                 tar2 = np.array([x2, y2])
-        else:  # 当前点在圆内，则求以该点与圆心连线为中心线，与中心线左右两侧夹角为60度的两条直线和圆的交点,所得点之前圆弧为优弧
+        else:
             a = 4
             b = 6 * dis2center
             c = 3 * dis2center ** 2 - r ** 2

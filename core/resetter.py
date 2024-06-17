@@ -152,10 +152,14 @@ class TurnCenterResetter(BaseResetter):
 
 class TurnMaxProbEnergyResetter(BaseResetter):
     """
-    基本思想：
-      - 假设前提：人类的移动是基于短期目标的，是理性的，因此人类趋向于兴趣点移动；即使在无任何参考物的广阔虚拟空间，人每一步移动的预期在很大程度
-                上趋向于保持原方向不变，转角越大，概率更低。因此这很符合高斯概率模型。
-      - 使用前必须为物理空间调用calc_r2mpe_vis_range_simplify()以进行必要的场景预计算
+    Base idea:
+
+      Human movement is based on short-term goals and is rational, so humans tend to move towards points of interest.
+      Even in a vast virtual space without any reference objects, the expectation for each step of movement tends
+      to keep the original direction unchanged to a large extent, and the larger the turning angle, the lower the
+      probability. Therefore, this is consistent with the Gaussian probability model.
+
+      must call pscene.calc_r2mpe_vis_range_simplify() before use.
 
     """
 
@@ -218,9 +222,7 @@ class TurnMaxProbEnergyResetter(BaseResetter):
         self.p_scene_rot_occupancy_deg = 360 / self.p_scene.tilings_rot_occupancy_num
 
     def calc_reset_target_fwd(self):
-        """
-        记录虚拟空间每个tiling在找旋转方向最优解过程中是否被访问过，如果访问过，则其相应的单点能量一定计算过，否则就更新一下该点的能量
-        """
+
         self.v_vis_tri = tuple(np.array(tri) for tri in self.agent.v_cur_tiling.vis_tri)
         self.v_tiling_visible = [None] * len(self.v_scene.tilings)
         self.v_data_visited = self.v_tiling_visited.copy()
@@ -240,50 +242,55 @@ class TurnMaxProbEnergyResetter(BaseResetter):
 
         v_off = self.v_loc - self.v_scene.tiling_offset
         step = 3
-        com_num = 0
-        pot_thetas = tuple(range(-180, 181, step))  # 120等分
+        find_optimal = False
+        rough_opt = True
+        angle_range = tuple(np.linspace(-180, 179, 120))
+        angle_idx = 0
         max_s_eng = -float('inf')
         theta = 0
         fwd = None
         eng_dist = None
-        for p_theta in pot_thetas:
+
+        while not find_optimal:
+            p_theta = angle_range[angle_idx]
             p_fwd = geo.rot_vecs(self.init_fwd, p_theta * DEG2RAD)
             nx_pot_loc = self.p_loc + p_fwd * self.reset_pred_t
             if geo.chk_p_in_bound(nx_pot_loc, self.p_scene.bounds, self.reset_trigger_t):
                 p_eng, p_eng_dist = self.__calc_dir_energy(p_theta, p_fwd, v_off)
-                com_num += 1
                 if p_eng > max_s_eng:
                     max_s_eng = p_eng
                     theta = p_theta
                     fwd = p_fwd
                     eng_dist = p_eng_dist
-
-        init_theta = theta
-        theta_rag = tuple(range(- step, step + 1, 1))
-        for t_off in theta_rag:
-            p_theta = init_theta + t_off
-            if p_theta > 180:
-                p_theta -= 360
-            if p_theta < -180:
-                p_theta += 360
-            p_fwd = geo.rot_vecs(self.init_fwd, p_theta * DEG2RAD)
-            p_eng, p_eng_dist = self.__calc_dir_energy(p_theta, p_fwd, v_off)
-            com_num += 1
-            if p_eng > max_s_eng:
-                max_s_eng = p_eng
-                fwd = p_fwd
-                eng_dist = p_eng_dist
+            if angle_idx < len(angle_range) - 1:
+                angle_idx += 1
+            else:
+                if rough_opt:
+                    rough_opt = False
+                    angle_range = tuple((np.linspace(-step, step, 2 * step) + theta + 180) % 360 - 180)
+                    angle_idx = 0
+                else:
+                    find_optimal = True
 
         self.tar_v_ids, self.tar_p_ids, self.tar_v_engs, self.tar_p_engs = eng_dist
         self.reset_target_fwd = fwd
 
     def __calc_dir_energy(self, reset_theta, pot_fwd, v_off):
-        # 按照论文的方法
+        """
+        calculate energy distribution of a certain direction
+
+        Args:
+            reset_theta: tested reset angle ()
+            pot_fwd:
+            v_off:
+
+        Returns:
+
+        """
         v_w, v_h = self.v_scene.tilings_shape
         inter_p, inter_dis, _ = geo.calc_ray_bound_intersection(self.p_loc, pot_fwd, self.p_scene.bounds)
         if inter_dis <= self.reset_trigger_t:
             return 0, None
-        ## 计算出当前转角前提下，虚实空间相交区域，并进一步计算出虚拟空间相交区域的总能量
         cross_v_energy = 0
         cross_p_energy = 0
         cross_vt_ids = []
@@ -304,7 +311,7 @@ class TurnMaxProbEnergyResetter(BaseResetter):
                 cross_p_tiling = self.p_scene.tilings[p_id]
                 col, row = mapped_p_rc[self.p_tid_map_mat[self.agent.p_cur_tiling.id][p_id]]
                 cross_pt_ids.append(p_id)
-                # 如果将运动预测模型加入实际空间能量计算，则开启下面被注释的代码
+
                 if self.p_data_visited[p_id]:
                     sur_vec = self.p_sur_vecs[p_id]
                     sur_vel_energy = self.p_sur_vel_engs[p_id]
@@ -321,7 +328,7 @@ class TurnMaxProbEnergyResetter(BaseResetter):
 
                 if 0 <= row < v_h and 0 <= col < v_w:
                     v_id = row * v_w + col
-                    cross_v_tiling = self.v_scene.tilings[v_id]  # 物理空间某个tiling在虚拟空间对应的tiling
+                    cross_v_tiling = self.v_scene.tilings[v_id]
                     if cross_v_tiling.type:
                         if self.v_tiling_visible[v_id] is not None:
                             in_vis_tri = self.v_tiling_visible[v_id]
@@ -363,95 +370,6 @@ class TurnMaxProbEnergyResetter(BaseResetter):
         p1, p2 = np.exp(inter_dis), np.exp(-inter_dis)
         phy_fwd_attenuation_coff = (p1 - p2) / (p1 + p2)
         return phy_fwd_attenuation_coff * cross_scene_energy, (cross_vt_ids, cross_pt_ids, cross_vt_engs, cross_pt_engs)
-
-    # def __calc_dir_energy(self, reset_theta, pot_fwd, v_off):
-    #     # 按照论文的方法
-    #     v_w, v_h = self.v_scene.tilings_shape
-    #     inter_p, inter_dis, _ = geo.calc_ray_bound_intersection(self.p_loc, pot_fwd, self.p_scene.bounds)
-    #     if inter_dis <= self.reset_trigger_t:
-    #         return 0, None
-    #     ## 计算出当前转角前提下，虚实空间相交区域，并进一步计算出虚拟空间相交区域的总能量
-    #     cross_v_energy = 0
-    #     cross_p_energy = 0
-    #     cross_vt_ids = []
-    #     cross_pt_ids = []
-    #     cross_vt_engs = []
-    #     cross_pt_engs = []
-    #     vp_theta_dev = geo.calc_angle_bet_vec(pot_fwd, self.v_fwd)
-    #     # v_col,v_row
-    #     mapped_p_rc = ((geo.rot_vecs(self.p_data_rela, vp_theta_dev) + v_off) // self.v_scene.tiling_w).astype(np.int32)
-    #     t_reset_theta = reset_theta if reset_theta < 180 else reset_theta + 360
-    #     central_grid_idx = int(t_reset_theta // self.p_scene_rot_occupancy_deg)
-    #     h_fov_occu_num = int(self.h_fov // self.p_scene_rot_occupancy_deg)
-    #
-    #     for o_i in range(-h_fov_occu_num, h_fov_occu_num + 1):
-    #         occu_id = (central_grid_idx + o_i) % self.p_scene.tilings_rot_occupancy_num
-    #         occu_grid = self.agent.p_cur_tiling.r2mpe_360_partition[occu_id]
-    #         for p_id in occu_grid:
-    #             cross_p_tiling = self.p_scene.tilings[p_id]
-    #             col, row = mapped_p_rc[self.p_tid_map_mat[self.agent.p_cur_tiling.id][p_id]]
-    #             if 0 <= row < v_h and 0 <= col < v_w:
-    #                 v_id = row * v_w + col
-    #                 cross_v_tiling = self.v_scene.tilings[v_id]  # 物理空间某个tiling在虚拟空间对应的tiling
-    #                 if cross_v_tiling.type:
-    #                     if self.v_tiling_visible[v_id] is not None:
-    #                         in_vis_tri = self.v_tiling_visible[v_id]
-    #                     else:
-    #                         in_vis_tri = False
-    #                         crs_t_dir = cross_v_tiling.center - self.agent.v_cur_tiling.center
-    #                         for tri_id in self.agent.v_cur_tiling.vis_360angle_partition[
-    #                             math.floor((geo.calc_angle_bet_vec(crs_t_dir, (0, 1)) * RAD2DEG + 180) % 360)]:
-    #                             if geo.chk_p_in_conv_simple(cross_v_tiling.center, self.v_vis_tri[tri_id]):
-    #                                 in_vis_tri = True
-    #                         self.v_tiling_visible[v_id] = in_vis_tri
-    #                     if in_vis_tri:
-    #                         cross_pt_ids.append(p_id)
-    #                         cross_vt_ids.append(v_id)
-    #                         # 如果将运动预测模型加入实际空间能量计算，则开启下面被注释的代码
-    #                         if self.p_data_visited[p_id]:
-    #                             sur_vec = self.p_sur_vecs[p_id]
-    #                             sur_vel_energy = self.p_sur_vel_engs[p_id]
-    #                         else:
-    #                             self.p_data_visited[p_id] = 1
-    #                             sur_vec = cross_p_tiling.center - self.p_loc
-    #                             sur_vel_energy = self.p_weights[p_id] * self.mov_energy_base ** alg.l2_norm_square(
-    #                                 sur_vec * 0.01)
-    #                             self.p_sur_vecs[p_id] = sur_vec
-    #                             self.p_sur_vel_engs[p_id] = sur_vel_energy
-    #                         theta = geo.calc_angle_bet_vec(sur_vec, pot_fwd)
-    #                         p_energy = sur_vel_energy * self.rot_energy_base ** (theta ** 2)
-    #                         cross_pt_engs.append(p_energy)
-    #                         cross_p_energy += p_energy
-    #
-    #                         if self.v_data_visited[v_id]:
-    #                             v_energy = cross_v_tiling.prob_energy
-    #                         else:
-    #                             self.v_data_visited[v_id] = 1
-    #                             sur_vec = cross_v_tiling.center - self.v_loc
-    #                             sur_vel = alg.l2_norm(sur_vec)
-    #                             theta = geo.calc_angle_bet_vec(sur_vec, self.v_fwd)
-    #                             v_energy = self.v_weights[v_id] * self.mov_energy_base ** alg.l2_norm_square(
-    #                                 sur_vec * 0.01)
-    #                             v_energy *= self.rot_energy_base ** (theta ** 2)
-    #                             obs_coff = 1
-    #                             if sur_vel > 0 and len(self.agent.v_cur_tiling.sur_obs_grids_ids) > 0:
-    #                                 norm_vec = sur_vec / sur_vel
-    #                                 obs_coff = float('inf')
-    #                                 for o_v, o_d_rev_2, o_sup in self.agent.v_cur_tiling.sur_obs_bound_tiling_attr:
-    #                                     epsilon = (0.5 + np.dot(norm_vec, o_v) * o_d_rev_2) ** o_sup
-    #                                     if epsilon < obs_coff:
-    #                                         obs_coff = epsilon
-    #                             v_energy *= obs_coff
-    #                             cross_v_tiling.prob_energy = v_energy
-    #                         cross_vt_engs.append(v_energy)
-    #                         cross_v_energy += v_energy
-    #
-    #     alpha = 0.2
-    #     cross_scene_energy = (1 - alpha) * cross_p_energy + alpha * cross_v_energy
-    #     inter_dis *= 0.01
-    #     p1, p2 = np.exp(inter_dis), np.exp(-inter_dis)
-    #     phy_fwd_attenuation_coff = (p1 - p2) / (p1 + p2)
-    #     return phy_fwd_attenuation_coff * cross_scene_energy, (cross_vt_ids, cross_pt_ids, cross_vt_engs, cross_pt_engs)
 
     def render(self, wdn_obj, default_color):
         super().render(wdn_obj, default_color)

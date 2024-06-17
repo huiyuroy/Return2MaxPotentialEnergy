@@ -41,14 +41,6 @@ class Boundary:
                 max_y = py
         self.orth_cir_rect = [min_x, min_y, max_x, max_y]
 
-    def clone(self):
-        c_bound = Boundary()
-        c_bound.is_out_bound = self.is_out_bound
-        c_bound.points = np.array(self.points).copy().tolist()
-        c_bound.points_num = self.points_num
-        c_bound.center = self.center.copy()
-        c_bound.barycenter = np.array(self.barycenter).copy().tolist()
-        c_bound.cir_rect = np.array(self.cir_rect).copy().tolist()
-        return c_bound
+
 
 
