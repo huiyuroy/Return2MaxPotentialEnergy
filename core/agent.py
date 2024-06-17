@@ -101,8 +101,8 @@ class BaseAgent(ABC):
         self.v_lst_loc, self.v_lst_fwd = self.v_cur_loc, self.v_cur_fwd
         self.v_pre_loc, self.v_pre_fwd = self.v_lst_loc, self.v_lst_fwd
         self.v_pre_vel, self.v_pre_rot = self.v_lst_vel, self.v_lst_rot
-        self.p_cur_tiling, self.p_cur_conv = self.p_scene.calc_user_tiling_conv(self.p_lst_loc)
-        self.v_cur_tiling, self.v_cur_conv = self.v_scene.calc_user_tiling_conv(self.v_lst_loc)
+        self.p_cur_tiling, self.p_cur_conv = self.p_scene.calc_user_tiling(self.p_lst_loc)
+        self.v_cur_tiling, self.v_cur_conv = self.v_scene.calc_user_tiling(self.v_lst_loc)
 
         self.gainer.reset()
         self.rdwer.reset()
@@ -127,8 +127,8 @@ class BaseAgent(ABC):
         self.gainer.update_pv_states()
         self.rdwer.update_pv_states()
         self.resetter.update_pv_states()
-        self.p_cur_tiling, self.p_cur_conv = self.p_scene.calc_user_tiling_conv(self.p_cur_loc)
-        self.v_cur_tiling, self.v_cur_conv = self.v_scene.calc_user_tiling_conv(self.v_lst_loc)
+        self.p_cur_tiling, self.p_cur_conv = self.p_scene.calc_user_tiling(self.p_cur_loc)
+        self.v_cur_tiling, self.v_cur_conv = self.v_scene.calc_user_tiling(self.v_lst_loc)
 
     def step(self, **kwargs):
         """

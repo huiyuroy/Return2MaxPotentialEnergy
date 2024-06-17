@@ -15,4 +15,7 @@ To enable simulation test/demo, the dataset is essential. The data is provided i
 
 ## Requirement
 Python 3.10
+pygame
+matplotlib
+
 

@@ -310,14 +310,6 @@ class Scene:
         self.conv_collision_priority = []
         self.conv_connection_priority = []
 
-        self.simu_trajs_patches = []
-        self.simu_trajs_abs_road_targets = []
-        self.simu_trajs_prox_road_targets = []
-        self.simu_trajs_abs_rand_targets = []
-        self.simu_trajs_tiling_rand_targets = []
-        self.simu_enabled_trajs = None
-        self.simu_trajs_idx = 0
-
     def update_contours(self, name, contours_points):
         """
 
@@ -833,7 +825,7 @@ class DiscreteScene(Scene):
                 tiling.r2mpe_vis_occu_ids = np.array([t_id for vis_g in tiling.r2mpe_360_partition for t_id in vis_g])
         print()
 
-    def calc_user_tiling_conv(self, pos) -> Tuple[Tiling, geo.ConvexPoly]:
+    def calc_user_tiling(self, pos) -> Tuple[Tiling, geo.ConvexPoly]:
         xc, yc = ((pos - self.tiling_offset) // self.tiling_w).astype(np.int32)
         cur_tiling = self.tilings[yc * self.tilings_shape[0] + xc]  # 对应虚拟网格的id
         corr_conv_len = len(cur_tiling.corr_conv_ids)
@@ -1095,7 +1087,7 @@ class DiscreteScene(Scene):
         return tuple(range_layer1), tuple(range_layer2)
 
     def calc_diffusion_dist(self, user_loc, user_fwd, enable_obs_coff=True):
-        cur_tiling, _ = self.calc_user_tiling_conv(user_loc)
+        cur_tiling, _ = self.calc_user_tiling(user_loc)
         sur_tiling_centers = self.tilings_data.copy()
         sur_tiling_probs = np.zeros(len(self.tilings))
         for sur_tiling in self.tilings:

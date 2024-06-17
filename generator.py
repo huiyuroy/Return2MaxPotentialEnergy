@@ -268,6 +268,16 @@ def load_scene(tar_path, simple_load=False):
     return scene
 
 
+def load_scene_contour(tar_path):
+    scene = DiscreteScene()
+    scene_dir, scene_name = os.path.split(tar_path)
+    s_name = scene_name.split(".")[0]
+    contour_data = load_json(tar_path)
+    load_contours(scene, contour_data)
+
+    return scene
+
+
 def load_trajectories(tar_path, scene_name):
     def load_trajectory(t_path):
         traj_data = load_json(t_path)
