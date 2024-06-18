@@ -511,13 +511,13 @@ class DiscreteScene(Scene):
         self.tiling_h_width: float = 0
         self.tiling_h_diag = 0
         self.tilings: Sequence[Tiling] = []
-        self.tilings_shape: Tuple = ()  # tilings 行列分布 [w,h]
-        self.tiling_w: float = GRID_WIDTH  # tiling块的宽度大小，以m计算
+        self.tilings_shape: Tuple = ()
+        self.tiling_w: float = GRID_WIDTH
         self.tiling_w_inv: float = 1 / GRID_WIDTH
         self.tiling_offset: np.ndarray = np.array([0, 0])
         self.tilings_data: np.ndarray = np.array([])
         self.tilings_weights: np.ndarray = np.array([])
-        self.tilings_weights_grad: np.ndarray = np.array([])  # 梯度方向为weight下降方向，要用需要取反
+        self.tilings_weights_grad: np.ndarray = np.array([])
         self.tilings_nei_ids = []
         self.tilings_walkable = []
         self.tilings_visitable = []
@@ -801,12 +801,6 @@ class DiscreteScene(Scene):
         self.tilings_data = np.array(self.tilings_data)
 
     def calc_r2mpe_precomputation(self):
-        """
-        如采用R2mpe，必须在创建物理场景后调用
-
-        Returns:
-
-        """
         total_count = len(self.tilings)
         count = 0
         th = (HUMAN_STEP * 3) ** 2
@@ -848,24 +842,7 @@ class DiscreteScene(Scene):
 
     def update_visibility(self, pos, fwd=None, fov=360, grids_comp=False, realtime_comp=True) -> Tuple[
         Tuple, List[List[int]]]:
-        """
 
-        Args:
-            pos:
-            fwd:
-            fov: 可见区域左右两边视线夹角 in degree
-            grids_comp:计算可见区域内离散网格点，当采用离线计算可见区域时，此设置无意义，算法直接返回存储的可见区域离散网格点；反之，根据设置
-            实时计算处在可见区域内的所有网格点
-
-            realtime_comp: 采用实时计算可见性，反之使用离线计算的可见区域（基于网格图）
-
-        Returns:
-
-            vis_tris: 可见三角形，每个三角形第一个点一定是可见原点，整体按照逆时针排序
-
-            vis_grids: 以1度划分360个扇区，记录每个扇区中可见的采样点的id，当grids_comp启用时返回实际值。反之返回空
-
-        """
         pos = np.array(pos)
         xc, yc = ((pos - self.tiling_offset) // self.tiling_w).astype(np.int32)
         tiling = self.tilings[yc * self.tilings_shape[0] + xc]
@@ -875,13 +852,12 @@ class DiscreteScene(Scene):
             vis_rays, vis_tris = self.__calc_fov_visibility(pos, fwd, fov, vis_rays)
             if grids_comp:
                 h_fov = fov * DEG2RAD * 0.5
-                if fov == 360:  # 如果视野范围是360度，则将朝向标准化为(0,1)，目的是用于预计算可见区域时的方向标准化
+                if fov == 360:
                     fwd = (0, 1)
-                # 以可见原点提供360个旋转分区，每个分区记录该分区可能跨越的可见三角的下标。每个分区记录1度圆心角的扇形与fwd的夹角，本质是从-180度
-                # 开始，到180度结束。0号位置表示-180~-179
+
                 ang_partition = [[] for _ in range(360)]
                 vis_grids = [[] for _ in range(360)]
-                # 记录当前三角形是否在其射线间边后面有隐藏边，若有，处于射线夹角内的点还需要检测是否处于三角形内，若没有，则必定在三角形内
+
                 tris_hidden_back = []
                 npvis_tris = []
                 for idx, tri in enumerate(vis_tris):
@@ -962,23 +938,12 @@ class DiscreteScene(Scene):
 
     @staticmethod
     def __calc_fov_visibility(pos, fwd, fov, vis_rays: Sequence[Ray]) -> tuple[tuple[Ray], tuple[tuple[Ray, Ray], ...]]:
-        """
 
-        Args:
-            pos:
-            fwd:
-            fov:
-            vis_rays:
-
-        Returns:
-            vis_vertexes: 可见区域的外轮廓点
-            vis_triangles:可见三角形，记录三角形两边（沿可见原点发出），整体按照逆时针排序，三角形按照射线与x轴夹角排序（逆时针）
-        """
         if fov < 360 and fwd is not None:
             vis_rays = list(vis_rays)
             h_fov = fov * DEG2RAD * 0.5
-            ray_r = geo.rot_vecs(fwd, h_fov)  # 最右侧视线
-            ray_l = geo.rot_vecs(fwd, -h_fov)  # 最左侧视线
+            ray_r = geo.rot_vecs(fwd, h_fov)
+            ray_l = geo.rot_vecs(fwd, -h_fov)
             r_find, l_find = False, False
             r_pos, l_pos = None, None
             side_rays = []
@@ -1023,37 +988,10 @@ class DiscreteScene(Scene):
             tri_s = vis_rays[ti]
             tri_e = vis_rays[ti + 1]
             vis_tris.append((tri_s, tri_e))
-        return tuple(vis_rays), tuple(vis_tris)  # vis_vertexes逆时针排序，所以vis_tris里三角形顶点排序也是逆时针
+        return tuple(vis_rays), tuple(vis_tris)
 
     def calc_tiling_diffusion(self, tiling_idx: Tuple, init_fwd, fov=120, depth=6, rot_theta=0) -> Tuple[Tuple, Tuple]:
-        """
-        计算以像素为单位，fov视角范围内，depth深度内某像素的邻域像素，返回结果以最近向最外，逐层扩散的方式返回邻域像素。例：
-            fov = 120
-            depth = 6
-            rot_theta = 0
 
-            - - - - - p - - - - -
-            - - p p p p p p p - -
-            - p p p p p p p p p -
-            - - p p p p p p p - -
-            - - - - p p p - - - -
-            - - - - - c - - - - -
-            - - - - - - - - - - -
-            - - - - - - - - - - -
-
-            其中，p是范围内像素，-是范围外像素
-
-        Args:
-            tiling_idx: 中心tiling的行列号（w,h）
-            fov:
-            init_fwd: 初始正方向
-            pixel_width: 像素宽度
-            depth: 可观测到的最深像素深度（中心像素depth-1范围）
-            rot_theta: 正方向旋转角（角度制），默认以[0,1] 为正方向
-
-        Returns: 左右两个视野半区的tiling编号，每个编号(col,row)
-
-        """
 
         fov = fov * DEG2RAD
         h_fov = fov * 0.5
@@ -1096,11 +1034,7 @@ class DiscreteScene(Scene):
             sur_prob = 0
             if sur_tiling.type:
                 theta = geo.calc_angle_bet_vec(sur_vec, user_fwd)
-                # 将[-pi,pi]作为99%置信区间，防止角度大时能量太小 https://blog.csdn.net/kaede0v0/article/details/113790060
-                # rot_prob = np.exp(-0.5 * (theta / np.pi) ** 2 * 4) / ((2 * np.pi) ** 0.5)
-                # 将3*human step作为99%置信区间 https://blog.csdn.net/kaede0v0/article/details/113790060
-                # mov_prob = np.exp(-0.5 * (sur_vel / self.human_step_single) ** 2 * 9 / 4) / ((2 * np.pi) ** 0.5)
-                # sur_prob = rot_prob * mov_prob
+
                 sur_prob = np.exp(
                     -(4.5 * (theta * REV_PI) ** 2 + 0.5 * (sur_vel * REV_HUMAN_STEP) ** 2)) * REV_PI_2
                 obs_coff = 1

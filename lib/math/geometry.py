@@ -22,15 +22,6 @@ class Triangle:
         self.in_edges = []
 
     def det_common_edge(self, other_t):
-        """
-        与另一个三角形对比，找共同边
-
-        Args:
-            other_t: 另一个三角形
-
-        Returns:
-
-        """
         for i in range(-1, len(self.vertices) - 1):
             e = [self.vertices[i], self.vertices[i + 1]]
             for j in range(-1, len(other_t.vertices) - 1):
@@ -60,12 +51,12 @@ class Triangle:
 class ConvexPoly:
 
     def __init__(self):
-        self.vertices = None  # list type
+        self.vertices = None
         self.center = np.array([0, 0])
         self.barycenter = None
-        self.cir_circle = []  # 外接圆，形式[x,y],r
-        self.in_circle = []  # 内切圆，形式[x,y],r
-        self.cir_rect = []  # 最小外界矩形
+        self.cir_circle = []
+        self.in_circle = []
+        self.cir_rect = []
         self.out_edges = []
         self.in_edges = []
         self.area = 0
@@ -79,15 +70,6 @@ class ConvexPoly:
         self.in_circle = calc_poly_max_in_circle(poly_points)
 
     def det_common_edge(self, other_p):
-        """
-        与另一个凸多边形对比，找共同边
-
-        Args:
-            other_p: 另一个三角形
-
-        Returns:
-
-        """
         for i in range(-1, len(self.vertices) - 1):
             e = [self.vertices[i], self.vertices[i + 1]]
             for j in range(-1, len(other_p.vertices) - 1):
@@ -130,11 +112,12 @@ class ConvexPoly:
 
 def rot_vecs(v, ang) -> np.ndarray:
     """
-    绕(0,0)点旋转指定向量
+    rotate around (0,0)
+
 
     Args:
-        v: 指定向量
-        ang: 旋转角(弧度制)，+顺时针，-逆时针
+        v:
+        ang: in radian, +clockwise, -anti_clockwise
 
     Returns: 旋转后向量
 
@@ -146,14 +129,6 @@ def rot_vecs(v, ang) -> np.ndarray:
 
 
 def norm_vec(v):
-    """
-    归一化向量
-    Args:
-        v: 向量
-
-    Returns:
-        归一化向量
-    """
     v_o = np.array(v)
     v_l = (v_o[0] ** 2 + v_o[1] ** 2) ** 0.5
     if v_l == 0:
@@ -162,15 +137,6 @@ def norm_vec(v):
 
 
 def calc_tri_area(tri):
-    """
-    计算三角形面积
-
-    Args:
-        tri: 三角形顶点
-
-    Returns:
-        面积
-    """
     p1x, p1y = tri[0]
     p2x, p2y = tri[1]
     p3x, p3y = tri[2]
@@ -178,16 +144,6 @@ def calc_tri_area(tri):
 
 
 def calc_poly_area(poly):
-    """
-    计算多边形面积(凹凸均可)
-
-    Args:
-        poly:
-
-    Returns:
-
-    """
-
     row, col = poly.shape
     index = range(row - 2)
     area_sum = 0
@@ -197,17 +153,6 @@ def calc_poly_area(poly):
 
 
 def calc_poly_barycenter(poly):
-    """
-    计算多边形重心
-
-    Args:
-        poly: 多边形顶点列表,例如：[[1,2],
-                                [3,4],
-                                [2,3]]
-
-    Returns:
-        重心，以list表示
-    """
     row, col = poly.shape
     index = range(row - 2)
     area_sum = 0
@@ -223,15 +168,6 @@ def calc_poly_barycenter(poly):
 
 
 def calc_convex_centroid(convex_set):
-    """
-    求解凸多边形质心
-
-    Args:
-        convex_set:
-
-    Returns:
-
-    """
     row, col = convex_set.shape
     if row < 2:
         return None
@@ -240,16 +176,6 @@ def calc_convex_centroid(convex_set):
 
 
 def calc_angle_bet_vec(v_base, v_target):
-    """
-    返回两不为0向量间夹角，从v_base转过所要计算的角度到v_target，以弧度制
-
-    Args:
-        v_base: 旋转向量
-        v_target: 目标向量
-
-    Returns:
-        旋转角 0 - PI 顺时针转角 -PI - 0 逆时针转角
-    """
     if (v_base[0] == 0 and v_base[1] == 0) or (v_target[0] == 0 and v_target[1] == 0):
         return 0
     vbtan = np.arctan2(v_base[1], v_base[0])
@@ -265,31 +191,10 @@ def calc_angle_bet_vec(v_base, v_target):
 
 
 def calc_turn_angle_in_gain(velocity_v, gain):
-    """
-    基于当前速度和增益值，计算对应弯曲角大小（曲率增益），以角度制
-
-    Args:
-        velocity_v: 速度
-        gain: 增益值
-
-    Returns:
-        弯曲角
-    """
     return (velocity_v[0] ** 2 + velocity_v[1] ** 2) ** 0.5 * gain * RAD2DEG
 
 
 def calc_turn_angle(velocity_v, radius):
-    """
-    返回对应圆弧的圆心角，以角度制
-
-    Args:
-        velocity_v: 速度
-        radius: 弯曲半径
-
-    Returns:
-        弯曲角
-    """
-
     if radius == -1:
         return 0
     else:
@@ -297,15 +202,6 @@ def calc_turn_angle(velocity_v, radius):
 
 
 def calc_cir_rect(poly):
-    """
-    计算给定标准旋转状态下多边形最小外接矩形
-
-    Args:
-        poly: 多边形顶点列表，ndarray
-
-    Returns:
-        最小外接矩形，宽，高
-    """
     [x_min, y_min] = np.min(poly, axis=0)
     [x_max, y_max] = np.max(poly, axis=0)
     min_rect = np.array([[x_min, y_min],
@@ -316,16 +212,6 @@ def calc_cir_rect(poly):
 
 
 def calc_poly_min_cir_rect(poly):
-    """
-    计算给定多边形的最小外接矩形
-
-    Args:
-        poly: 多边形定点序列，二维数组形式
-
-    Returns:
-        最小外接矩形，面积，多边形对应旋转角度
-    """
-
     N, d = poly.shape
     if N < 3 or d != 2:
         raise ValueError
@@ -347,15 +233,6 @@ def calc_poly_min_cir_rect(poly):
 
 
 def calc_poly_min_cir_circle(poly: list):
-    """
-    计算多边形的最小外接圆
-
-    Args:
-        poly:
-
-    Returns:
-        [[xc,yc],r]
-    """
     tar_p = pickle.loads(pickle.dumps(poly))
     cur_p_set = []
     p1, p2 = tar_p.pop(), tar_p.pop()
@@ -388,17 +265,6 @@ def calc_poly_min_cir_circle(poly: list):
 
 
 def calc_tri_min_cir_circle(p1, p2, p3):
-    """
-    求三角形最小外接圆
-
-    Args:
-        p1:
-        p2:
-        p3:
-
-    Returns:
-        [[xc,yc],r]
-    """
     d1 = alg.l2_norm(p1 - p2)
     d2 = alg.l2_norm(p1 - p3)
     d3 = alg.l2_norm(p2 - p3)
@@ -523,18 +389,6 @@ def calc_point_mindis2poly(pos, poly: np.ndarray):
 
 
 def calc_point_pro2line(p, l_s, l_e):
-    """
-    计算点在指定线段上的投影
-
-    Args:
-        p: 点
-        l_s: 线段起点
-        l_e: 线段终点
-
-    Returns:
-        投影距离，投影点，投影点在线段上的t值
-    """
-
     point_loc = np.array(p)
     line_s_loc = np.array(l_s)
     line_e_loc = np.array(l_e)
@@ -561,14 +415,13 @@ def calc_point_mindis2line(p, l_s, l_e):
     e_loc = np.array(l_e)
     cos1 = np.dot(p_loc - s_loc, e_loc - s_loc)
     cos2 = np.dot(p_loc - e_loc, s_loc - e_loc)
-    if cos1 * cos2 >= 0:  # p在直线的投影点在线段起点和终点之间（考虑了与起始点重合的情况）
-        # 采用直线一般式Ax+By+C=0表示线段所在直线，继而求出点到直线投影距离
+    if cos1 * cos2 >= 0:
         a = e_loc[1] - s_loc[1]
         b = s_loc[0] - e_loc[0]
         c = e_loc[0] * s_loc[1] - s_loc[0] * e_loc[1]
         d = (a ** 2 + b ** 2) ** 0.5
         return np.fabs(a * p_loc[0] + b * p_loc[1] + c) / d
-    else:  # 点的投影在线段两端之外，此时直接求点到两端的最小值即可
+    else:
         ps = p_loc - s_loc
         d1 = (ps[0] ** 2 + ps[1] ** 2) ** 0.5
         es = p_loc - e_loc
@@ -580,70 +433,46 @@ def calc_point_mindis2line(p, l_s, l_e):
 
 
 def calc_lines_intersect(l1_s, l1_e, l2_s, l2_e):
-    """
-    线段求交点
-
-    Args:
-        l1_s: 线段1起点
-        l1_e: 线段1终点
-        l2_s: 线段2起点
-        l2_e: 线段2终点
-
-    Returns:
-        交点
-    """
     l1_s = np.array(l1_s)
     l1_e = np.array(l1_e)
     l2_s = np.array(l2_s)
     l2_e = np.array(l2_e)
     l1_v = l1_e - l1_s
     l2_v = l2_e - l2_s
-    i_type = -1  # -2 参数错误,  -1 - 无交点， 0 - 因共线有交集， 1 - 有一个交点
+    i_type = -1  # -2 para erro,  -1 - no intersect， 0 - collinear， 1 - 1 intersect
     intersect = []
     extend_info = []
-    if (l1_v[0] == 0 and l1_v[1] == 0) or (l2_v[0] == 0 and l2_v[1] == 0):  # 某线段是一个点，不能进行判断
+    if (l1_v[0] == 0 and l1_v[1] == 0) or (l2_v[0] == 0 and l2_v[1] == 0):
         i_type = -2
         intersect = None
         extend_info = None
-    elif alg.cross(l1_v, l2_v) != 0:  # 两线段不共线
+    elif alg.cross(l1_v, l2_v) != 0:
         a, b = l1_v[0], l1_v[1]
         c, d = l2_v[0], l2_v[1]
         e, f = l2_s[0] - l1_s[0], l2_s[1] - l1_s[1]
         s = (e * d - c * f) / (a * d - c * b)
         t = (e * b - a * f) / (a * d - c * b)
-        if 0 <= s <= 1 and 0 <= t <= 1:  # 有交点
+        if 0 <= s <= 1 and 0 <= t <= 1:
             i_type = 1
             intersect = np.multiply(l1_v, s) + l1_s
             extend_info = (s, t)
-        else:  # 无交点
+        else:
             i_type = -1
             intersect = None
             extend_info = None
-    else:  # 共线
+    else:
         l3_v = l2_e - l1_s
-        if alg.cross(l1_v, l3_v) != 0:  # 两线段平行，不可能有交点
+        if alg.cross(l1_v, l3_v) != 0:
             i_type = -1
             intersect = None
             extend_info = None
-        else:  # 两线段在同一直线上
-            pass  # ----------------------------------------------------------------------------------------------------
+        else:
+            pass
 
     return i_type, intersect, extend_info
 
 
 def calc_nonparallel_lines_intersect(l1_s, l1_e, l2_s, l2_e):
-    """
-    非共线线段求交点，若共线则无交点,该方法用于计算两凸多边形交集
-
-    Args:
-        l1_s: 线段1起点
-        l1_e: 线段1终点
-        l2_s: 线段2起点
-        l2_e: 线段2终点
-
-    Returns:
-        t (# 1 - 有一个交点, 0- 无交点), p (交点), info
-    """
     l1_s = np.array(l1_s)
     l1_e = np.array(l1_e)
     l2_s = np.array(l2_s)
@@ -651,14 +480,14 @@ def calc_nonparallel_lines_intersect(l1_s, l1_e, l2_s, l2_e):
     l1_v = l1_e - l1_s
     l2_v = l2_e - l2_s
 
-    if alg.cross(l1_v, l2_v) != 0:  # 两线段不共线
+    if alg.cross(l1_v, l2_v) != 0:
         a, b = l1_v
         c, d = l2_v
         e, f = l2_s - l1_s
         m = a * d - c * b
         s = (e * d - c * f) / m
         t = (e * b - a * f) / m
-        if 0 <= s <= 1 and 0 <= t <= 1:  # 有交点
+        if 0 <= s <= 1 and 0 <= t <= 1:
             return 1, (np.multiply(l1_v, s) + l1_s).tolist(), (s, t)
     return 0, None, None
 
@@ -666,34 +495,19 @@ def calc_nonparallel_lines_intersect(l1_s, l1_e, l2_s, l2_e):
 def calc_ray_line_intersect(l_s, l_e, r_s, r_p) -> Tuple[int, Tuple[np.ndarray, np.ndarray] |
                                                               Tuple[None, np.ndarray] |
                                                               None]:
-    """
-    检测射线与指定线段是否相交
-
-    Args:
-        l_s:
-        l_e:
-        r_s:
-        r_p:射线上任意一点
-
-    Returns:
-        相交类型，交点
-        - 0，None 无交点
-        - 1，[None,point] 有一个交点
-        - 2，[p1,p2] 共线，
-    """
     l_left = l_s - r_s
     l_right = l_e - r_s
 
-    if alg.cross(l_left, l_right) == 0:  # 射线与线段共线
+    if alg.cross(l_left, l_right) == 0:
         r_dir = r_p - r_s
-        if np.dot(l_left, l_right) <= 0:  # 射线起点在线段中
-            if np.dot(r_dir, l_right) >= 0:  # 如果线段终点方向与射线方向相同，相交区域为射线起点到线段终点
+        if np.dot(l_left, l_right) <= 0:
+            if np.dot(r_dir, l_right) >= 0:
                 return 2, (r_s, l_e)
             else:
                 return 2, (r_s, l_s)
-        elif np.dot(r_dir, l_left) >= 0:  # 射线起点在线段外，且线段在射线方向，相交区域为线段
+        elif np.dot(r_dir, l_left) >= 0:
             return 2, (l_s, l_e)
-        else:  # 射线起点在线段外，且线段反方向，没有交点
+        else:
             return 0, None
     else:
         center = (l_s + l_e) * 0.5
@@ -715,17 +529,6 @@ def calc_ray_line_intersect(l_s, l_e, r_s, r_p) -> Tuple[int, Tuple[np.ndarray, 
 def calc_ray_bound_intersection(pos: np.ndarray,
                                 fwd: np.ndarray,
                                 bounds) -> Tuple[np.ndarray, float, Tuple[np.ndarray, np.ndarray]]:
-    """
-    检测射线与场景边界最近交点
-
-    Args:
-        pos:
-        fwd:
-        bounds:
-
-    Returns:
-        交点，最近距离，相交边界
-    """
     min_dis = float('inf')
     min_inter = None
     min_bound = []
@@ -753,17 +556,6 @@ def calc_ray_bound_intersection(pos: np.ndarray,
 
 
 def calc_square_bound_cross(center, width, boundaries):
-    """
-    获取指定正方形区域与区域边界相交的轮廓线
-
-    Args:
-        center: 正方形中心
-        width: 正方形宽度
-        boundaries: 指定区域
-
-    Returns:
-        返回与正方形相交的边界轮廓线ndarray = N * 2 * 2，N为轮廓线个数，2、2分别对应某条轮廓线起始点和点的xy坐标
-    """
     c_x, c_y = center
     h_w = 0.5 * width
     s_points = [[c_x - h_w, c_y - h_w],
@@ -784,16 +576,6 @@ def calc_square_bound_cross(center, width, boundaries):
 
 
 def chk_p_in_tilings(pos, tilings):
-    """
-    检验某点是否在tiling块集合中，如果在则返回所在tiling对象
-
-    Args:
-        pos: 目标点
-        tilings: tiling集合
-
-    Returns:
-        所在tiling对象
-    """
     target = None
     for tiling in tilings:
         if tiling.x_min <= pos[0] <= tiling.x_max and tiling.y_min <= pos[1] <= tiling.y_max:
@@ -804,35 +586,10 @@ def chk_p_in_tilings(pos, tilings):
 
 
 def chk_ps_on_line_side(p1, p2, l_s, l_e):
-    """
-    检测两点是否位于线段同侧
-
-    Args:
-        p1: 点1
-        p2: 点2
-        l_s: 线段起点
-        l_e: 线段终点
-
-    Returns:
-        同侧-1 不同侧-0
-    """
     return alg.cross(p1 - l_s, p1 - l_e) * alg.cross(p2 - l_s, p2 - l_e) > 0
 
 
 def chk_lines_cross(l1_s, l1_e, l2_s, l2_e) -> bool:
-    """
-    线段求交
-
-    Args:
-        l1_s: 线段1起点
-        l1_e: 线段1终点
-        l2_s: 线段2起点
-        l2_e: 线段2终点
-
-    Returns:
-        是否相交
-    """
-    # AABB包围盒快速筛选
     if max(l1_s[0], l1_e[0]) >= min(l2_s[0], l2_e[0]) and max(l2_s[0], l2_e[0]) >= min(l1_s[0], l1_e[0]) and \
             max(l1_s[1], l1_e[1]) >= min(l2_s[1], l2_e[1]) and max(l2_s[1], l2_e[1]) >= min(l1_s[1], l1_e[1]):
         nl1_s = np.array(l1_s)
@@ -846,17 +603,6 @@ def chk_lines_cross(l1_s, l1_e, l2_s, l2_e) -> bool:
 
 
 def chk_line_bound_cross(l1_s, l1_e, bounds):
-    """
-    检验线段与指定区域边界是否相交
-
-    Args:
-        l1_s: 线段起点
-        l1_e: 线段终点
-        bounds: 边界
-
-    Returns:
-        是否相交
-    """
     for bound in bounds:
         b_ps = bound.points
         b_ps_num = len(b_ps)
@@ -870,19 +616,6 @@ def chk_line_bound_cross(l1_s, l1_e, bounds):
 
 
 def chk_line_rect_cross(line, rect):
-    """
-    检查线段与矩形是否相交,包括包含、相交关系
-
-    Args:
-        line: 线段 [lsx,lsy,lex,ley]
-        rect: 矩形 [[left-bottom],
-                   [right-bottom],
-                   [right-top],
-                   [left-top]]
-
-    Returns:
-
-    """
     l_s = np.array(line[:2])
     l_e = np.array(line[2:4])
     left = rect[0][0]
@@ -899,23 +632,11 @@ def chk_line_rect_cross(line, rect):
 
 
 def chk_right_ray_line_cross(r_s, l_s, l_e):
-    """
-    以给定点为起点，向右发射的射线是否与给定线段有交点，交点与给定点间距小于指定阈值也记为未相交。
-
-    Args:
-        r_s: 射线指定点
-        l_s: 线段起点
-        l_e: 线段终点
-
-    Returns:
-        是否相交
-    """
-
-    if l_s[1] == l_e[1]:  # 线段与x轴平行
+    if l_s[1] == l_e[1]:
         return False
-    if l_s[1] > r_s[1] and l_e[1] > r_s[1]:  # 线段在射线上方
+    if l_s[1] > r_s[1] and l_e[1] > r_s[1]:
         return False
-    if l_s[1] < r_s[1] and l_e[1] < r_s[1]:  # 线段在射线下方
+    if l_s[1] < r_s[1] and l_e[1] < r_s[1]:
         return False
     if l_s[1] == r_s[1] and l_e[1] > r_s[1]:
         return False
@@ -935,17 +656,6 @@ def chk_p_rect_quick(p, rect_w, rect_h):
 
 
 def chk_p_in_bound(pos, bounds, danger_dis=0):
-    """
-    检测指定点是否在边界内
-
-    Args:
-        pos: 点位置
-        bounds: 区域边界
-        danger_dis: : 危险距离，若距离某条边小于该阈限，直接触发边界碰撞，导致出界
-
-    Returns:
-        若在区域内，则True
-    """
     in_bound = True
     for bound in bounds:
         in_cur_bound = False
@@ -972,18 +682,6 @@ def chk_p_in_bound(pos, bounds, danger_dis=0):
 
 
 def chk_p_in_conv(pos, poly: list, poly_in_circle):
-    """
-    计算给定点是否在指定的凸多边形内，在边界上也算在多边形内，需要多边形必须是逆时针排序
-
-    Args:
-
-        pos:
-        poly:
-        poly_in_circle:
-
-    Returns:
-    """
-
     c, r = poly_in_circle
     c = np.array(c)
     v = pos - c
@@ -1004,25 +702,14 @@ def chk_p_in_conv(pos, poly: list, poly_in_circle):
 
 
 def chk_p_in_conv_simple(pos: np.ndarray, poly: np.ndarray):
-    """
-    计算给定点是否在指定的凸多边形内，在边界上也算在多边形内，需要多边形必须是逆时针排序
-
-    Args:
-        pos: (x,y)
-        poly:((x1,y1),(x2,y2),.....(xn,yn))
-
-    Returns:
-
-    """
-
     row, col = poly.shape
     p_poly = poly - pos
     for i in range(-1, row - 1):
         pv1, pv2 = p_poly[i], p_poly[i + 1]
         cross = alg.cross(pv1, pv2)
-        if cross < 0:  # 点在多边形边右侧，代表在多边形之外
+        if cross < 0:
             return False
-        elif cross == 0 and np.dot(pv1, pv2) <= 0:  # 点p在直线v1v2上，并且在线段v1v2之间，则直接判定在多边形内
+        elif cross == 0 and np.dot(pv1, pv2) <= 0:
             return True
     return True
 
@@ -1037,17 +724,6 @@ def chk_p_in_circle(pos, c_center, c_r):
 
 
 def chk_square_bound_cross(center, width, boundaries):
-    """
-    检测指定正方形边界是否与区域边界相交
-
-    Args:
-        center: 正方形中心
-        width: 正方形宽度
-        boundaries: 指定区域
-
-    Returns:
-        若相交，则True
-    """
     intersect_boundary = False
     c_x = center[0]
     c_y = center[1]
@@ -1080,16 +756,6 @@ def chk_square_bound_cross(center, width, boundaries):
 
 
 def chk_poly_concavity(poly: list):
-    """
-    判断poly是否是凸多边形，需要输入多边形顶点逆时针序列
-
-    Args:
-        poly:
-
-    Returns:
-
-    """
-
     poly_num = len(poly)
     for i in range(0, poly_num):
         v_f = poly[i - 1]
@@ -1097,22 +763,12 @@ def chk_poly_concavity(poly: list):
         v_n = poly[(i + 1) % poly_num]
         vec1 = np.array([v[0] - v_f[0], v[1] - v_f[1]])
         vec2 = np.array([v_n[0] - v[0], v_n[1] - v[1]])
-        if calc_angle_bet_vec(vec2, vec1) <= 0:  # 当前拐角不是凸的
+        if calc_angle_bet_vec(vec2, vec1) <= 0:
             return False
     return True
 
 
 def chk_convs_intersect(poly1: list, poly1_in_cir, poly2: list, poly2_in_cir):
-    """
-    计算两个凸多边是否交集
-    Args:
-        poly1:
-        poly1_in_cir:
-        poly2:
-        poly2_in_cir:
-
-    Returns:
-    """
     if len(poly1) < 3 or len(poly2) < 3:
         return False
     else:
@@ -1123,12 +779,12 @@ def chk_convs_intersect(poly1: list, poly1_in_cir, poly2: list, poly2_in_cir):
                 total_set.append(p)
         if len(total_set) >= 3:
             return True
-        for i in range(-1, poly1_num - 1):  # 先检测poly1的所有顶点在不在poly2中,同时把poly1与poly2边的交点得到
+        for i in range(-1, poly1_num - 1):
             po1v1, po1v2 = poly1[i], poly1[i + 1]
             if chk_p_in_conv(np.array(po1v2), poly2, poly2_in_cir):
                 can_add = True
                 for ep in total_set:
-                    if abs(ep[0] - po1v2[0]) < EPS and abs(ep[1] - po1v2[1]) < EPS:  # 判断两点是否相同，去重复
+                    if abs(ep[0] - po1v2[0]) < EPS and abs(ep[1] - po1v2[1]) < EPS:
                         can_add = False
                         break
                 if can_add:
@@ -1155,17 +811,6 @@ def chk_convs_intersect(poly1: list, poly1_in_cir, poly2: list, poly2_in_cir):
 
 
 def chk_points_clockwise(points) -> int:
-    """
-            Check if sequence of points is oriented in clockwise order.
-
-            Args:
-                points:
-
-            Returns:
-                1 - clockwise
-                0 - collinear
-                -1 - counterclockwise
-    """
     p1, p2, p3 = points[0], points[1], points[2]
     clockwise = ((p2[1] - p1[1]) * (p3[0] - p2[0]) - (p2[0] - p1[0]) * (p3[1] - p2[1]))
     if clockwise > 0:
@@ -1177,23 +822,9 @@ def chk_points_clockwise(points) -> int:
 
 
 def chk_ray_rect_AABB(r_s: Tuple, r_dir: Tuple, rect: Tuple[float, float, float, float]):
-    """
-    ray and rect AABB detect, use slab based method. see:
-    https://blog.csdn.net/qq_22822335/article/details/50930423
-
-
-
-    Args:
-        r_s: 射线起点
-        r_dir: 射线方向
-        rect:[min_x,min_y,max_x,max_y]
-
-    Returns:
-
-    """
     min_x, min_y, max_x, max_y = rect
     rs_x, rs_y = r_s
-    if r_dir[0] == 0:  # 射线平行y轴
+    if r_dir[0] == 0:
         if rs_x < min_x or rs_x > max_x:
             return False
         elif min_y <= rs_y <= max_y:
@@ -1204,7 +835,7 @@ def chk_ray_rect_AABB(r_s: Tuple, r_dir: Tuple, rect: Tuple[float, float, float,
             return True
         else:
             return False
-    elif r_dir[1] == 0:  # 射线平行x轴
+    elif r_dir[1] == 0:
         if rs_y < min_y or rs_y > max_y:
             return False
         elif min_x <= rs_x <= max_x:
@@ -1215,7 +846,7 @@ def chk_ray_rect_AABB(r_s: Tuple, r_dir: Tuple, rect: Tuple[float, float, float,
             return True
         else:
             return False
-    else:  # 不平行于任何一轴
+    else:
         slab_x_t1 = (min_x - rs_x) / r_dir[0]
         slab_x_t2 = (max_x - rs_x) / r_dir[0]
         slab_y_t1 = (min_y - rs_y) / r_dir[1]
@@ -1224,15 +855,12 @@ def chk_ray_rect_AABB(r_s: Tuple, r_dir: Tuple, rect: Tuple[float, float, float,
         slab_x_tmax = max(slab_x_t1, slab_x_t2)
         slab_y_tmin = min(slab_y_t1, slab_y_t2)
         slab_y_tmax = max(slab_y_t1, slab_y_t2)
-        # 若射线与x_slab区域的交点缩放比t_xmin和t_xmax均小于1（y_slab区域同理），代表射线背向x或yslab发射，这一定不会相交
         if (slab_x_tmin < 0 and slab_x_tmax < 0) or (slab_y_tmin < 0 and slab_y_tmax < 0):
             return False
-        # 两个slab的射线交点缩放比t的范围有交集，一定穿过矩形
         elif slab_x_tmax >= slab_y_tmin or slab_x_tmin >= slab_y_tmax:
             return True
         else:
             all_t = sorted([slab_x_tmin, slab_x_tmax, slab_y_tmin, slab_y_tmax])
-            # 排除误差影响，两个交集交于1点时，数学上成立，但python浮点数精度导致两个交点值不一定绝对相等
             if abs(all_t[1] - all_t[2]) < EPS:
                 return True
             else:
@@ -1242,8 +870,6 @@ def chk_ray_rect_AABB(r_s: Tuple, r_dir: Tuple, rect: Tuple[float, float, float,
 def chk_ray_line_cross(r_s: Tuple, r_dir: Tuple, l_s: Tuple, l_e: Tuple):
     r_e = (r_s[0] + r_dir[0], r_s[1] + r_dir[1])
 
-
-# ----------------------------------------------------凸多边形交集相关-----------------------------------------------------
 
 def calc_poly_angle(p, inner_p):
     vec = np.array(p) - inner_p
@@ -1257,20 +883,16 @@ def quick_sort_poly_points(inner_p, poly_points: list, low, high):
         return poly_points
     i = low
     j = high
-    # 定义基准,基准左边小于基数,右边大于基数
     pivot = poly_points[low]
     ang_piv = calc_poly_angle(pivot, inner_p)
     while i < j:
-        # 从后向前扫描
         while i < j and calc_poly_angle(poly_points[j], inner_p) > ang_piv:
             j -= 1
         poly_points[i] = poly_points[j]
-        # 从前向后扫描
         while i < j and calc_poly_angle(poly_points[i], inner_p) < ang_piv:
             i += 1
         poly_points[j] = poly_points[i]
     poly_points[j] = pivot
-    # 分段排序
     quick_sort_poly_points(inner_p, poly_points, low, j - 1)
     quick_sort_poly_points(inner_p, poly_points, j + 1, high)
     return poly_points
@@ -1320,15 +942,6 @@ def reorder_conv_vertex(poly_points: list):
 
 
 def cmp_convex_vertex_order(points_set: list):
-    """
-    对多边形顶点进行排序，排序按照逆时针排序
-
-    Args:
-        points_set:
-
-    Returns:
-
-    """
     centroid = calc_convex_centroid(np.array(points_set[0:3]))
     point_num = len(points_set)
     point_angs = []
@@ -1344,7 +957,7 @@ def cmp_convex_vertex_order(points_set: list):
         for j in range(0, point_num - i - 1):
             ang1 = point_angs[j]
             ang2 = point_angs[j + 1]
-            if ang1 > ang2:  # 点p1以多边形质心centroid逆时针绕过的角度大于点p2，这代表p1应该排在p2的后面
+            if ang1 > ang2:
                 temp = np.array(points_set[j]).tolist()
                 points_set[j] = points_set[j + 1]
                 points_set[j + 1] = temp
@@ -1355,18 +968,6 @@ def cmp_convex_vertex_order(points_set: list):
 
 
 def calc_con_polys_intersect(poly1: list, poly1_in_cir, poly2: list, poly2_in_cir):
-    """
-    计算两个凸多边形交集，获得最终凸交集轮廓（按照逆时针方向排序）
-
-    Args:
-        poly1:
-        poly1_in_cir:
-        poly2:
-        poly2_in_cir:
-
-    Returns:
-        交集区域轮廓（凸多边形）: list
-    """
     if len(poly1) < 3 or len(poly2) < 3:
         inter_poly = None
     else:
@@ -1375,7 +976,7 @@ def calc_con_polys_intersect(poly1: list, poly1_in_cir, poly2: list, poly2_in_ci
         for p in poly2:
             if chk_p_in_conv(np.array(p), poly1, poly1_in_cir):
                 total_set.append(p)
-        for i in range(-1, poly1_num - 1):  # 先检测poly1的所有顶点在不在poly2中,同时把poly1与poly2边的交点得到
+        for i in range(-1, poly1_num - 1):
             po1v1, po1v2 = poly1[i], poly1[i + 1]
             if chk_p_in_conv(np.array(po1v2), poly2, poly2_in_cir):
                 can_add = True
@@ -1387,63 +988,22 @@ def calc_con_polys_intersect(poly1: list, poly1_in_cir, poly2: list, poly2_in_ci
                     total_set.append(po1v2)
             for j in range(-1, poly2_num - 1):
                 po2v1, po2v2 = poly2[j], poly2[j + 1]
-                # 这里特别注意，由于交点坐标精度问题，可能出现极小的误差，这里需要进一步处理一下，忽略误差
                 i_t, i_p, _ = calc_nonparallel_lines_intersect(po1v1, po1v2, po2v1, po2v2)
-                # 仅考察poly1和poly2非共线边的交叉点,原因是若两边共线，无非就是重合或完全不相交
-                # 若重合，则重合点在之前判断多边形顶点是否在另一多边形内时就会找到
                 if i_t:
                     can_add = True
                     for ep in total_set:
-                        if abs(ep[0] - i_p[0]) < EPS and abs(ep[1] - i_p[1]) < EPS:  # 判断两点是否相同，去重复
+                        if abs(ep[0] - i_p[0]) < EPS and abs(ep[1] - i_p[1]) < EPS:
                             can_add = False
                             break
                     if can_add:
                         total_set.append(i_p)
 
-        # if len(total_set) >= 3:
-        #     centroid = np.array(calc_convex_centroid(total_set[0:3]))
-        #     pi_2 = 2 * math.pi
-        #     v_angs = []
-        #     for p in v_set:
-        #         vec = np.array(p) - centroid
-        #         ang_p = math.atan2(vec[1], vec[0])
-        #         ang_p = ang_p if ang_p >= 0 else ang_p + pi_2
-        #         v_angs.append(ang_p)
-        #     start_i = 0
-        #     while len(i_set) > 0:
-        #         i_p = i_set.popleft()
-        #         i_vec = np.array(i_p) - centroid
-        #         i_a = math.atan2(i_vec[1], i_vec[0])
-        #         i_a = i_a if i_a >= 0 else i_a + pi_2
-        #         v_num = len(v_set)
-        #         for i in range(start_i, v_num):
-        #             v_a = v_angs[i]
-        #             if i_a < v_a:
-        #                 start_i = i
-        #                 break
-        #         v_set = v_set[0:start_i] + [i_p] + v_set[start_i:v_num]
-        #         v_angs = v_angs[0:start_i] + [i_a] + v_angs[start_i:v_num]
-        #     inter_poly = v_set
-        # else:
-        #     inter_poly = None
         inter_poly = cmp_convex_vertex_order(total_set) if len(total_set) >= 3 else None
 
     return inter_poly
 
 
 def calc_con_polys_intersect_simple(poly1: Sequence, poly2: Sequence):
-    """
-    计算两个凸多边形交集，获得最终凸交集轮廓（按照逆时针方向排序）
-
-    Args:
-        poly1:
-        poly1_in_cir:
-        poly2:
-        poly2_in_cir:
-
-    Returns:
-        交集区域轮廓（凸多边形）: list
-    """
     if len(poly1) < 3 or len(poly2) < 3:
         inter_poly = None
     else:
@@ -1452,26 +1012,23 @@ def calc_con_polys_intersect_simple(poly1: Sequence, poly2: Sequence):
         for p in poly2:
             if chk_p_in_conv_simple(p, np.array(poly1)):
                 total_set.append(p)
-        for i in range(-1, poly1_num - 1):  # 先检测poly1的所有顶点在不在poly2中,同时把poly1与poly2边的交点得到
+        for i in range(-1, poly1_num - 1):
             po1v1, po1v2 = poly1[i], poly1[i + 1]
             if chk_p_in_conv_simple(po1v2, np.array(poly2)):
                 can_add = True
                 for ep in total_set:
-                    if abs(ep[0] - po1v2[0]) < EPS and abs(ep[1] - po1v2[1]) < EPS:  # 判断两点是否相同，去重复
+                    if abs(ep[0] - po1v2[0]) < EPS and abs(ep[1] - po1v2[1]) < EPS:
                         can_add = False
                         break
                 if can_add:
                     total_set.append(po1v2)
             for j in range(-1, poly2_num - 1):
                 po2v1, po2v2 = poly2[j], poly2[j + 1]
-                # 这里特别注意，由于交点坐标精度问题，可能出现极小的误差，这里需要进一步处理一下，忽略误差
                 i_t, i_p, _ = calc_nonparallel_lines_intersect(po1v1, po1v2, po2v1, po2v2)
-                # 仅考察poly1和poly2非共线边的交叉点,原因是若两边共线，无非就是重合或完全不相交
-                # 若重合，则重合点在之前判断多边形顶点是否在另一多边形内时就会找到
                 if i_t > 0:
                     can_add = True
                     for ep in total_set:
-                        if abs(ep[0] - i_p[0]) < EPS and abs(ep[1] - i_p[1]) < EPS:  # 判断两点是否相同，去重复
+                        if abs(ep[0] - i_p[0]) < EPS and abs(ep[1] - i_p[1]) < EPS:
                             can_add = False
                             break
                     if can_add:
@@ -1482,18 +1039,7 @@ def calc_con_polys_intersect_simple(poly1: Sequence, poly2: Sequence):
     return inter_poly
 
 
-# ----------------------------------------------------求凸包相关----------------------------------------------------------
 def calc_sort_point_cos(points, center_point):
-    """
-    按照与中心点的极角进行排序，使用的是余弦的方法
-
-    Args:
-        points: 需要排序的点
-        center_point: 中心点
-
-    Returns:
-
-    """
     n = len(points)
     cos_value = []
     rank = []
@@ -1534,15 +1080,6 @@ def calc_sort_point_cos(points, center_point):
 
 
 def calc_convex_graham_scan(points):
-    """
-    Graham扫描法计算凸包
-
-    Args:
-        points:
-
-    Returns:
-
-    """
     min_index = 0
     n = len(points)
     for i in range(0, n):
@@ -1555,7 +1092,7 @@ def calc_convex_graham_scan(points):
 
     m = len(sorted_points)
     if m < 2:
-        print("点的数量过少，无法构成凸包")
+        print("error")
         return
 
     stack = []
@@ -1583,9 +1120,6 @@ def calc_convex_graham_scan(points):
     return stack
 
 
-# ----------------------------------------------------三角剖分相关--------------------------------------------------------
-
-
 def calc_poly_triangulation(poly_bounds: list):
     total_bound, total_edges = calc_poly_out_bound(poly_bounds)
     tris = calc_out_bound_triangulation(total_bound, total_edges)
@@ -1593,28 +1127,20 @@ def calc_poly_triangulation(poly_bounds: list):
 
 
 def calc_poly_out_bound(poly_bounds: list):
-    """
-    将内部轮廓依次融合到最外层轮廓，使得最终轮廓只有一个
-    Args:
-        poly_bounds:
-
-    Returns:
-
-    """
     target_bounds = pickle.loads(pickle.dumps(poly_bounds))
     if target_bounds is None:
         return None, None
-    elif len(target_bounds) == 1:  # 仅包含外轮廓
+    elif len(target_bounds) == 1:
         total_bound = target_bounds[0]
         ver_num = len(total_bound)
         total_bound, _ = calc_adjust_poly_order(total_bound)
         total_edges = []
         for i in range(-1, ver_num - 1):
-            total_edges.append([total_bound[i], total_bound[i + 1], 1])  # 创建轮廓边，最后一位表示是否外轮廓，用1,0表示
+            total_edges.append([total_bound[i], total_bound[i + 1], 1])
     else:
         bounds_num = len(target_bounds)
         out_bound = pickle.loads(pickle.dumps(target_bounds[0]))
-        out_bound, _ = calc_adjust_poly_order(out_bound)  # 外轮廓调为逆时针
+        out_bound, _ = calc_adjust_poly_order(out_bound)
         added_edges = []
         inner_bounds = pickle.loads(pickle.dumps(target_bounds[1:bounds_num]))
         while len(inner_bounds) > 0:
@@ -1630,7 +1156,7 @@ def calc_poly_out_bound(poly_bounds: list):
                     selected_idx = i
                     max_x = max_v_x
             inner_bound = inner_bounds[selected_idx]
-            inner_bound, _ = calc_adjust_poly_order(inner_bound, order=0)  # 内轮廓调为顺时针
+            inner_bound, _ = calc_adjust_poly_order(inner_bound, order=0)
             in_num = len(inner_bound)
             in_idx, out_idx = find_visible_vertex(inner_bound, out_bound)
             out_num = len(out_bound)
@@ -1652,7 +1178,7 @@ def calc_poly_out_bound(poly_bounds: list):
                 if chk_dir_edge_same([total_bound[i], total_bound[i + 1]], added_e):
                     is_out_e = 0
                     break
-            total_edges.append([total_bound[i], total_bound[i + 1], is_out_e])  # 创建轮廓边，最后一位表示是否外轮廓，用1,0表示
+            total_edges.append([total_bound[i], total_bound[i + 1], is_out_e])
 
     return total_bound, total_edges
 
@@ -1705,15 +1231,6 @@ def calc_out_bound_triangulation(poly_bounds: list, poly_edges: list):
 
 
 def chk_poly_clockwise(poly_bound: list):
-    """
-    检查多边形顺逆时针方向
-
-    Args:
-        poly_bound:
-
-    Returns:
-        1-逆时针 0-顺时针
-    """
     s = 0
     poly_num = len(poly_bound)
     for i in range(-1, poly_num - 1):
@@ -1723,17 +1240,6 @@ def chk_poly_clockwise(poly_bound: list):
 
 
 def calc_adjust_poly_order(poly_bound: list, order=1):
-    """
-    将多边形轮廓点按照指定方向重新调整，改变为顺时针/逆时针，默认逆时针. 1. 先利用鞋带公式求原始轮廓的方向. 2. 调整为目标方向
-
-    Args:
-        poly_bound: 轮廓点
-
-        order: 1-逆时针，0-顺时针
-
-    Returns:
-        调整后的轮廓点
-    """
     adjusted = pickle.loads(pickle.dumps(poly_bound))
     ori_order = chk_poly_clockwise(adjusted)
     if (order and not ori_order) or (not order and ori_order):
@@ -1742,16 +1248,6 @@ def calc_adjust_poly_order(poly_bound: list, order=1):
 
 
 def ear_clip_poly(bound, edges):
-    """
-    从给定轮廓中用耳切法切掉一个耳朵
-
-    Args:
-        bound:
-        edges:
-
-    Returns:
-
-    """
     cut_ear = None
     bound_num = len(bound)
 
@@ -1762,12 +1258,12 @@ def ear_clip_poly(bound, edges):
         v_n = bound[(i + 1) % bound_num]  # vn+1
         vec1 = np.array([v[0] - v_f[0], v[1] - v_f[1]])
         vec2 = np.array([v_n[0] - v[0], v_n[1] - v[1]])
-        if calc_angle_bet_vec(vec2, vec1) < 0:  # 当前拐角不是凸的
+        if calc_angle_bet_vec(vec2, vec1) < 0:
             is_ear = False
-        else:  # 当前拐角是凸的，可能是耳朵
-            tri_c = np.array([(v_f[0] + v[0] + v_n[0]) / 3, (v_f[1] + v[1] + v_n[1]) / 3])  # 当前三个点构成三角形的重心
+        else:
+            tri_c = np.array([(v_f[0] + v[0] + v_n[0]) / 3, (v_f[1] + v[1] + v_n[1]) / 3])
             for j in range(0, bound_num - 3):
-                other_v = np.array(bound[(i + j + 2) % bound_num])  # 除刚才三个点外的其他点
+                other_v = np.array(bound[(i + j + 2) % bound_num])
                 in_tri = False
                 nv_f = np.array(v_f)
                 nv = np.array(v)
@@ -1776,14 +1272,14 @@ def ear_clip_poly(bound, edges):
                     if chk_ps_on_line_side(tri_c, other_v, nv, nv_n):
                         if chk_ps_on_line_side(tri_c, other_v, nv_n, nv_f):
                             in_tri = True
-                if in_tri:  # 存在轮廓点在当前您的三角中，代表这个不是耳朵
+                if in_tri:
                     is_ear = False
                     break
         if is_ear:
             bound.pop(i)
             e1 = remove_edge_from_edgeset(edges, [v_f, v], is_dir=1)
             e2 = remove_edge_from_edgeset(edges, [v, v_n], is_dir=1)
-            e3 = [v_f, v_n, 0]  # 创建地边一定是内部边
+            e3 = [v_f, v_n, 0]
             edges.append(e3)
             cut_ear = Triangle()
             cut_ear.set_points(v_f, v, v_n)
@@ -1804,16 +1300,6 @@ def ear_clip_poly(bound, edges):
 
 
 def ear_clip_poly_opti(bound, edges):
-    """
-        从给定轮廓中用耳切法切掉一个耳朵
-
-        Args:
-            bound:
-            edges:
-
-        Returns:
-
-        """
     cut_ear = None
     bound_num = len(bound)
     ears = []
@@ -1827,36 +1313,30 @@ def ear_clip_poly_opti(bound, edges):
         nv_n = np.array(v_n)
         vec1 = np.array([v[0] - v_f[0], v[1] - v_f[1]])
         vec2 = np.array([v_n[0] - v[0], v_n[1] - v[1]])
-        if calc_angle_bet_vec(vec2, vec1) <= 0:  # 当前拐角不是凸的
+        if calc_angle_bet_vec(vec2, vec1) <= 0:
             is_ear = False
-        else:  # 当前拐角是凸的，可能是耳朵
-            tri_c = np.array([(v_f[0] + v[0] + v_n[0]) / 3, (v_f[1] + v[1] + v_n[1]) / 3])  # 当前三个点构成三角形的重心
+        else:
+            tri_c = np.array([(v_f[0] + v[0] + v_n[0]) / 3, (v_f[1] + v[1] + v_n[1]) / 3])
             for j in range(0, bound_num - 3):
-                other_v = np.array(bound[(i + j + 2) % bound_num])  # 除刚才三个点外的其他点
+                other_v = np.array(bound[(i + j + 2) % bound_num])
                 in_tri = False
                 if chk_ps_on_line_side(tri_c, other_v, nv_f, nv):
                     if chk_ps_on_line_side(tri_c, other_v, nv, nv_n):
                         if chk_ps_on_line_side(tri_c, other_v, nv_n, nv_f):
                             in_tri = True
-                if in_tri:  # 存在轮廓点在当前您的三角中，代表这个不是耳朵
+                if in_tri:
                     is_ear = False
                     break
         if is_ear:
             ears.append(i)
     target_idx = 0
     tar_vf, tar_v, tar_vn = None, None, None
-    max_area = 0  # 选面积最大的耳朵
+    max_area = 0
     for idx in ears:
         v_f = bound[idx - 1]  # vn-1
         v = bound[idx]  # vn
         v_n = bound[(idx + 1) % bound_num]  # vn+1
-        # vec1 = np.array([v[0] - v_f[0], v[1] - v_f[1]])
-        # vec2 = np.array([v_n[0] - v[0], v_n[1] - v[1]])
-        # ang = calc_angle_bet_vec(vec2, vec1)
-        # if ang < min_angle:
-        #     target_idx = idx
-        #     tar_vf, tar_v, tar_vn = v_f, v, v_n
-        #     min_angle = ang
+
         area = calc_tri_area([v_f, v, v_n])
         if area > max_area:
             target_idx = idx
@@ -1865,7 +1345,7 @@ def ear_clip_poly_opti(bound, edges):
     bound.pop(target_idx)
     e1 = remove_edge_from_edgeset(edges, [tar_vf, tar_v], is_dir=1)
     e2 = remove_edge_from_edgeset(edges, [tar_v, tar_vn], is_dir=1)
-    e3 = [tar_vf, tar_vn, 0]  # 创建地边一定是内部边
+    e3 = [tar_vf, tar_vn, 0]
     edges.append(e3)
     cut_ear = Triangle()
     cut_ear.set_points(tar_vf, tar_v, tar_vn)
@@ -1885,16 +1365,6 @@ def ear_clip_poly_opti(bound, edges):
 
 
 def find_visible_vertex(inner_bound, outer_bound):
-    """
-    返回指定内部轮廓与外部轮廓间的一对相互可见顶点，返回值是相应顶点在各自轮廓中的index
-
-    Args:
-        inner_bound:
-        outer_bound:
-
-    Returns:
-        内轮廓可见点idx，外轮廓可见点idx
-    """
     M = None
     m_idx = 0
     mx_max = 0
@@ -1913,16 +1383,16 @@ def find_visible_vertex(inner_bound, outer_bound):
         ov1 = outer_bound[i]
         ov2 = outer_bound[i + 1]
         i_p, i_t = find_ray_edge_intersect(M, ov1, ov2)
-        if i_p is not None:  # 有交点
+        if i_p is not None:
             if 0 <= i_t <= intersect_t:
                 I, cor_b1, cor_b2 = i_p, ov1, ov2
                 cor_b1_idx, cor_b2_idx = i, i + 1
                 intersect_t = i_t
-    if chk_p_same(I, cor_b1):  # 如果交点就是外轮廓上的一个点
+    if chk_p_same(I, cor_b1):
         return m_idx, cor_b1_idx
-    elif chk_p_same(I, cor_b2):  # 如果交点就是外轮廓上的一个点
+    elif chk_p_same(I, cor_b2):
         return m_idx, cor_b2_idx
-    else:  # 焦点在外轮廓的一条边上，需要进一步处理
+    else:
         if cor_b1[0] > cor_b2[0]:
             P = cor_b1
             p_idx = cor_b1_idx
@@ -1930,18 +1400,18 @@ def find_visible_vertex(inner_bound, outer_bound):
             P = cor_b2
             p_idx = cor_b2_idx
         p_in_MIP = []
-        tri_c = np.array([(M[0] + I[0] + P[0]) / 3, (M[1] + I[1] + P[1]) / 3])  # 当前三个点构成三角形的重心
+        tri_c = np.array([(M[0] + I[0] + P[0]) / 3, (M[1] + I[1] + P[1]) / 3])
         nM, nI, nP = np.array(M), np.array(I), np.array(P)
         for r_i in range(0, out_num - 2):
             idx = (cor_b2_idx + r_i + 1) % out_num
-            other_v = np.array(outer_bound[idx])  # 除刚才三个点外的其他点
+            other_v = np.array(outer_bound[idx])
             if chk_ps_on_line_side(tri_c, other_v, nM, nI):
                 if chk_ps_on_line_side(tri_c, other_v, nI, nP):
                     if chk_ps_on_line_side(tri_c, other_v, nP, nM):
                         p_in_MIP.append(idx)
-        if len(p_in_MIP) == 0:  # 如果没有别的外轮廓点在三角形MIP中，则MP构成一对相互可见点
+        if len(p_in_MIP) == 0:
             return m_idx, p_idx
-        else:  # 存在，则从中找出与x轴夹角最小的点与M构成一对相互可见点
+        else:
             min_a = float('inf')
             for p_i in p_in_MIP:
                 potential_p = outer_bound[p_i]
@@ -1954,33 +1424,22 @@ def find_visible_vertex(inner_bound, outer_bound):
 
 
 def find_ray_edge_intersect(m, p1, p2):
-    """
-    以m为基，向右x方向发射射线，计算射线与线段p1p2的交点
-
-    Args:
-        m:
-        p1:
-        p2:
-
-    Returns:
-
-    """
-    if p1[1] > m[1] and p2[1] > m[1]:  # 线段在射线上面
+    if p1[1] > m[1] and p2[1] > m[1]:
         i_p = None
         t = None
-    elif p1[1] < m[1] and p2[1] < m[1]:  # 线段在射线下面
+    elif p1[1] < m[1] and p2[1] < m[1]:
         i_p = None
         t = None
-    elif p1[1] == m[1] and p2[1] != m[1]:  # 线段一头在射线上，一头不在
+    elif p1[1] == m[1] and p2[1] != m[1]:
         i_p = p1
         t = p1[0] - m[0]
-    elif p2[1] == m[1] and p1[1] != m[1]:  # 线段一头在射线上，一头不在
+    elif p2[1] == m[1] and p1[1] != m[1]:
         i_p = p2
         t = p2[0] - m[0]
-    elif p1[1] == m[1] and p2[1] == m[1]:  # 线段完全在射线上
+    elif p1[1] == m[1] and p2[1] == m[1]:
         d1 = p1[0] - m[0]
         d2 = p2[0] - m[0]
-        if abs(d1) > abs(d2):  # 选距离近的点作为交点
+        if abs(d1) > abs(d2):
             i_p = p2
             t = d2
         else:
@@ -1994,17 +1453,6 @@ def find_ray_edge_intersect(m, p1, p2):
 
 
 def remove_edge_from_edgeset(edge_set, tar, is_dir=0):
-    """
-    从指定边集中检测并删除目标边，若有则返回删除边，若无则返回空. 默认针对无向边
-
-    Args:
-        edge_set:
-        tar:
-        is_dir:
-
-    Returns:
-
-    """
     if tar is None:
         return None
     elif not is_dir:
@@ -2022,16 +1470,6 @@ def remove_edge_from_edgeset(edge_set, tar, is_dir=0):
 
 
 def chk_edge_same(e1, e2):
-    """
-    判断无向边是否相同
-
-    Args:
-        e1:
-        e2:
-
-    Returns:
-
-    """
     if chk_p_same(e1[0], e2[0]) and chk_p_same(e1[1], e2[1]):
         return True
     elif chk_p_same(e1[0], e2[1]) and chk_p_same(e1[1], e2[0]):
@@ -2041,16 +1479,6 @@ def chk_edge_same(e1, e2):
 
 
 def chk_dir_edge_same(e1, e2):
-    """
-    判断无向边是否相同
-
-    Args:
-        e1:
-        e2:
-
-    Returns:
-
-    """
     if chk_p_same(e1[0], e2[0]) and chk_p_same(e1[1], e2[1]):
         return True
     else:
@@ -2074,62 +1502,3 @@ def chk_is_triangle(tri_contour):
         return True
 
 
-def obtain_hex_points(w):
-    """
-    生成正六边形顶点
-
-    Args:
-        w: 边长
-
-    Returns:
-        六边形顶点集
-    """
-    hex_points = [[0.5 * w, 0],
-                  [1.5 * w, 0],
-                  [2 * w, 0.5 * 3 ** 0.5 * w],
-                  [1.5 * w, 3 ** 0.5 * w],
-                  [0.5 * w, 3 ** 0.5 * w],
-                  [0, 0.5 * 3 ** 0.5 * w]]
-    return hex_points
-
-
-def obtain_pent_points(w):
-    """
-    生成正五边形顶点
-
-    Args:
-        w: 边长
-
-    Returns:
-        五边形顶点集
-    """
-    pent_angle = 0.4 * PI
-    cos_a = np.cos(pent_angle)
-    sin_a = np.sin(pent_angle)
-    pent = [[cos_a * w, 0],
-            [(1 + cos_a) * w, 0],
-            [(1 + 2 * cos_a) * w, sin_a * w],
-            [(0.5 + cos_a) * w, np.tan(pent_angle) * 0.5 * w],
-            [0, sin_a * w]]
-    return pent
-
-
-def obtain_rect_points(w, h):
-    """
-    生成矩形
-    Args:
-        w: 宽
-        h: 高
-
-    Returns:
-        矩形顶点集
-    """
-    x_min = 0
-    x_max = w
-    y_min = 0
-    y_max = h
-    rect = [[x_min, y_min],
-            [x_max, y_min],
-            [x_max, y_max],
-            [x_min, y_max]]
-    return rect

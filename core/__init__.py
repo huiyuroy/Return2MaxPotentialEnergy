@@ -56,7 +56,6 @@ class BaseManager(ABC):
     @abstractmethod
     def prepare(self):
         """
-        设置虚实空间及模拟行走路径后调用
 
         Returns:
 

@@ -19,7 +19,7 @@ class Trajectory:
         self.tar_data = None
         self.targets = None
         self.start_idx = 0
-        self.end_idx = -1  # 若大于总长度，自动选择最后一个目标
+        self.end_idx = -1
 
     def range_targets(self, start=0, end=-1):
         self.start_idx = start

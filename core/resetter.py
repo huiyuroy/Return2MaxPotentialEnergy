@@ -222,7 +222,6 @@ class TurnMaxProbEnergyResetter(BaseResetter):
         self.p_scene_rot_occupancy_deg = 360 / self.p_scene.tilings_rot_occupancy_num
 
     def calc_reset_target_fwd(self):
-
         self.v_vis_tri = tuple(np.array(tri) for tri in self.agent.v_cur_tiling.vis_tri)
         self.v_tiling_visible = [None] * len(self.v_scene.tilings)
         self.v_data_visited = self.v_tiling_visited.copy()
