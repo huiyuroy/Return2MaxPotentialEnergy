@@ -8,7 +8,8 @@ S2C, S2O, ARC, APF-based, etc.). For more details, please refer to https://doi.o
 
 ## How to use
 1. download dataset
-2. run demo_simu_eval.py
+2. run scene_precompute.py to enable all necessary precomputation of vir and phy scenes.
+3. run demo_simu_eval.py
 
 ## Dataset
 To enable the simulation test/demo, the dataset is provided in:
