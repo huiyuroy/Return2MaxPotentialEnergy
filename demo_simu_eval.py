@@ -35,8 +35,8 @@ if __name__ == '__main__':
     # init physical start position
     init_p_loc = None
     while init_p_loc is None:
-        x = random.randint(0, pscene.max_size[0])
-        y = random.randint(0, pscene.max_size[1])
+        x = random.randint(0, int(pscene.max_size[0]))
+        y = random.randint(0, int(pscene.max_size[1]))
         if geo.chk_p_in_bound([x, y], pscene.bounds):
             init_p_loc = [x, y]
 
