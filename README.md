@@ -22,6 +22,7 @@ To enable the simulation test/demo, the dataset is provided in:
 
 ## Requirement
 - Python 3.10
+- shapely
 - pygame
 - matplotlib
 - ujson
