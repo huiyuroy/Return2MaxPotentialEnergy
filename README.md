@@ -7,8 +7,11 @@ S2C, S2O, ARC, APF-based, etc.). For more details, please refer to https://doi.o
 
 
 ## How to use
-1. download dataset
-2. run scene_precompute.py to enable all necessary precomputation of vir and phy scenes.
+1. download dataset 
+2. space data prepare:
+   - run batch_save_vsecens.py 
+   - run batch_save_pscenes.py 
+   - run batch_save_vir_trajs.py 
 3. run demo_simu_eval.py
 
 ## Dataset
